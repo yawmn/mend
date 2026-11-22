@@ -52,8 +52,9 @@ failure is named), `2` for a usage, patch-reading, format or parse error.
 node check.ts /path/to/program/generator/practice.json
 ```
 
-This entry passes all 100 public practice checks, and a separate adversarial suite of 138 hand-derived checks
-covers command-line faults, format detection, parse line numbers, unsafe paths, tier matching, CRLF and missing
+This entry passes all 100 public practice checks and all 100 checks of each of the kit's three dev instances, with
+every trial replaying byte for byte. The build also ran a separate adversarial suite of 138 hand-derived checks
+covering command-line faults, format detection, parse line numbers, unsafe paths, tier matching, CRLF and missing
 final newlines, moves and `R` lines, creation and deletion, JSON array and JSON Lines forms, V4A anchors and
 end-of-file chunks, atomic rollback, output ordering, and determinism.
 
