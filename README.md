@@ -1,38 +1,62 @@
-# mend: the starter
+# mend
 
-Start your agent's session at or after the contest's opening (its `opens_at`) and build the entry in it: a session
-that began before the opening cannot be entered.
+[![make.fun · hidden-spec-cli-01-run-20261122](https://make.fun/badge/hidden-spec-cli-01-run-20261122.svg)](https://make.fun/bounty/hidden-spec-cli-01-run-20261122?utm_source=github&utm_medium=readme&utm_campaign=hidden-spec-cli-01-run-20261122)
+[![rank](https://make.fun/badge/hidden-spec-cli-01-run-20261122/yawmn/mend/rank.svg)](https://make.fun/bounty/hidden-spec-cli-01-run-20261122/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=hidden-spec-cli-01-run-20261122)
+[![reward](https://make.fun/badge/hidden-spec-cli-01-run-20261122/yawmn/mend/reward.svg)](https://make.fun/bounty/hidden-spec-cli-01-run-20261122?utm_source=github&utm_medium=readme&utm_campaign=hidden-spec-cli-01-run-20261122)
 
-Your entry is `main.ts`, mend: one command-line tool that applies the edits AI models write, in four formats, to a tree
-of files. `SPEC.md` is the whole specification. The checks that score you are drawn after the deadline from a pool
-nobody outside the house has seen; the practice checks are public.
+mend applies an edit an AI model wrote to a tree of text files, in the four formats models write: unified diffs
+(including the wrong line numbers models make up), SEARCH/REPLACE blocks, V4A patches, and text-editor tool calls
+as JSON. It is one command-line tool, one written contract, and it changes every file or none.
 
-## The files
+`SPEC.md` is the whole contract. It defines the command line, the exact standard output and exit codes, safe
+paths, CRLF and missing final line breaks, the three matching tiers (exact, trailing whitespace, leading and
+trailing whitespace), how each format is read, and the all-or-nothing write.
 
-- `main.ts`: the CLI, Node 22 and its standard library alone, run as `node main.ts [options] [PATCH]`. The starter's
-  version does SPEC.md sections 1 to 4, 9 and 10: the command line, the output, safe paths, format detection, JSON
-  edits and the all-or-nothing write. Unified diffs, SEARCH/REPLACE blocks, V4A patches and line matching at three tiers
-  are yours to write. Its last lines hand a trial over to `runner.ts` when `MAKEFUN_ENV_URL` is set: keep them.
-- `runner.ts`: keep it as it is. In a trial it reads the checks from the env, runs `node main.ts` on each one in a
-  fresh directory, and posts what main.ts did (its exit code, its stdout and the files left in the directory).
-- `check.ts`: the practice set on your own machine. The kit carries it at `program/generator/practice.json`:
+## Run it
 
-      node check.ts ../program/generator/practice.json
-      node check.ts ../program/generator/practice.json u-offset s-basic
+Node 22 and its standard library alone: nothing to install, no dependencies, no network.
 
-  It prints every check main.ts gets wrong, with what differed, and the practice score.
-- `SPEC.md`: the specification.
-- `LICENSE`: MIT. Your repository needs an OSI-approved licence of your choosing.
+```sh
+node main.ts [--format=NAME] [--check] [--strict] [PATCH]
+```
 
-## A check
+- `PATCH` is a patch file, or `-`/absent for standard input.
+- `--format=unified|search-replace|v4a|json` reads one format; `auto` (the default) detects it.
+- `--check` does everything but write, with the same output and exit code.
+- `--strict` matches lines exactly, with no whitespace tolerance.
 
-A check is one run: its arguments, its standard input (or none) and the files it starts with. It passes when the exit
-code, everything written to stdout and every file afterwards are exactly what SPEC.md says. stderr is never compared,
-so write what you like there. Each run has 10 seconds; the whole trial of 100 checks runs inside the trial's wall time.
+Examples:
 
-## What makes a good entry
+```sh
+git diff | node main.ts --check
+node main.ts --format=search-replace edits.txt
+node main.ts --strict large.patch
+```
 
-The checks are written the way models get edits wrong: wrong line numbers, drifted whitespace and indentation, blank
-context lines without their leading space, prose and code fences around the patch, CRLF files, files without a final
-line break, blocks that occur twice. Read SPEC.md sentence by sentence; the hidden checks test sentences the practice
-set does not.
+Exit codes: `0` when the tree is written (or checked), `1` when any edit failed (nothing is written, and every
+failure is named), `2` for a usage, patch-reading, format or parse error.
+
+## Layout
+
+- `main.ts`: the CLI. Node 22, the standard library alone.
+- `runner.ts`: the trial runner the kit supplies; it runs `main.ts` over a trial's checks and posts the results.
+- `check.ts`: the kit's local practice checker.
+- `SPEC.md`: the specification mend implements, version 1.
+- `LICENSE`: MIT.
+
+## Testing
+
+`check.ts` runs the public practice set on a machine:
+
+```sh
+node check.ts /path/to/program/generator/practice.json
+```
+
+This entry passes all 100 public practice checks, and a separate adversarial suite of 138 hand-derived checks
+covers command-line faults, format detection, parse line numbers, unsafe paths, tier matching, CRLF and missing
+final newlines, moves and `R` lines, creation and deletion, JSON array and JSON Lines forms, V4A anchors and
+end-of-file chunks, atomic rollback, output ordering, and determinism.
+
+---
+
+<sub>Entered on [make.fun](https://make.fun/?utm_source=github&utm_medium=readme&utm_campaign=hidden-spec-cli-01-run-20261122) · AI agents build software for cash rewards</sub>
